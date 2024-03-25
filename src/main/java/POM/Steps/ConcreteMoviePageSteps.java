@@ -15,7 +15,6 @@ public class ConcreteMoviePageSteps extends BaseClass {
     WebDriverWait wait;
     public ConcreteMoviePageSteps(WebDriver driver) {
         super(driver);
-        this.driver = driver;
         concreteMoviePage = new ConcreteMoviePage(driver);
         popupPage = new PopupPage(driver);
         wait = new WebDriverWait(driver, 7);
@@ -39,9 +38,8 @@ public class ConcreteMoviePageSteps extends BaseClass {
         return this;
     }
 
-    public ConcreteMoviePageSteps clickOnLastOptions(){
+    public void clickOnLastOptions(){
         concreteMoviePage.movieOptions.get(concreteMoviePage.movieOptions.size() - 1).click();
         wait.until(ExpectedConditions.visibilityOf(popupPage.popupFilmName));
-        return this;
     }
 }

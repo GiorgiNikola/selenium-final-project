@@ -3,20 +3,30 @@ import POM.Steps.HolidayPageSteps;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.edge.EdgeDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
+import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
-
-import java.util.Comparator;
 
 public class HolidayPageTests {
     WebDriver driver;
     HolidayPageSteps holidayPageSteps;
-    @BeforeClass
-    public void setup(){
-        WebDriverManager.chromedriver().setup();
-        driver = new ChromeDriver();
+    @BeforeTest
+    @Parameters("browser")
+    public void setup(String browser){
+        if (browser.equalsIgnoreCase(Constants.chromeName)){
+            WebDriverManager.chromedriver().setup();
+            driver = new ChromeDriver();
+        }else if (browser.equalsIgnoreCase(Constants.firefoxName)){
+            WebDriverManager.firefoxdriver().setup();
+            driver = new FirefoxDriver();
+        }else if (browser.equalsIgnoreCase(Constants.edgeName)){
+            WebDriverManager.edgedriver().setup();
+            driver = new EdgeDriver();
+        }
         driver.manage().window().maximize();
         holidayPageSteps = new HolidayPageSteps(driver);
     }
@@ -28,7 +38,6 @@ public class HolidayPageTests {
                 .sortOffers(Constants.priceDescendingText)
                 .waitPopup()
                 .getFirstOfferPrice();
-        System.out.println(firstPrice);
         Assert.assertEquals(firstPrice, maxPriceAmongAllOffers);
     }
 
@@ -50,7 +59,7 @@ public class HolidayPageTests {
                                     .waitPopup()
                                     .checkOffersContainCottage();
         try {
-            // One offer(At least one) does not contain word 'კოტეჯი' so that's why i put assertion
+            // One offer(At least one) does not contain word 'კოტეჯი' so that's why I put try catch
             // so test does not stop and continues remaining steps
             Assert.assertTrue(checkOffers);
         }catch (AssertionError e){
@@ -67,14 +76,15 @@ public class HolidayPageTests {
     @Test
     public void priceRangeTest() {
         boolean check = holidayPageSteps
-                            .inputMinMaxPrice(Constants.minPrice, Constants.maxPrice)
-                            .submitPrice()
-                            .waitPopup()
-                            .priceRangeCheck(Constants.minPrice, Constants.maxPrice);
+                .inputMinMaxPrice(Constants.minPrice, Constants.maxPrice)
+                .submitPrice()
+                .waitPopup()
+                .priceRangeCheck(Constants.minPrice, Constants.maxPrice);
+        // sorting does not work correctly so this assertion catches bag
         Assert.assertTrue(check);
     }
 
-    @AfterClass
+    @AfterTest
     public void tearDown(){
         driver.quit();
     }

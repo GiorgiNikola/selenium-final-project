@@ -1,11 +1,10 @@
 package POM.Steps;
 
 import POM.Common.BaseClass;
+import POM.Data.Constants;
 import POM.Pages.AccountCreationPage;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.Select;
 
 public class AccountCreationPageSteps extends BaseClass {
     AccountCreationPage accountCreationPage;
@@ -17,29 +16,30 @@ public class AccountCreationPageSteps extends BaseClass {
     }
 
     public AccountCreationPageSteps fillAllFields(){
-        accountCreationPage.email.sendKeys("giorgi@gia");
-        accountCreationPage.password.sendKeys("Tbcfinal123");
-        accountCreationPage.passwordRetype.sendKeys("Tbcfinal123");
+        accountCreationPage.email.sendKeys(Constants.invalidEmail);
+        accountCreationPage.password.sendKeys(Constants.password);
+        accountCreationPage.passwordRetype.sendKeys(Constants.password);
         accountCreationPage.male.click();
-        accountCreationPage.firstName.sendKeys("gia");
+        accountCreationPage.firstName.sendKeys(Constants.firstName);
         js.executeScript("window.scrollBy(0,400)", "");
-        accountCreationPage.lastName.sendKeys("nikoladze");
-        Select selectYear = new Select(accountCreationPage.selectBirthYear);
-        selectYear.selectByVisibleText("2004");
-        accountCreationPage.phoneNumber.sendKeys("511180450");
-        accountCreationPage.smsCode.sendKeys("1111");
+        accountCreationPage.lastName.sendKeys(Constants.lastName);
+        accountCreationPage.phoneNumber.sendKeys(Constants.phoneNumber);
+        accountCreationPage.smsCode.sendKeys(Constants.smsCode);
+        return this;
+    }
+
+    public AccountCreationPageSteps selectYear(){
+        js.executeScript("arguments[0].value = '2004';", accountCreationPage.selectBirthYear);
+        return this;
+    }
+
+    public AccountCreationPageSteps acceptCheckMarks(){
         js.executeScript("arguments[0].click();", accountCreationPage.firstCheckMark);
         js.executeScript("arguments[0].click();", accountCreationPage.secondCheckMark);
-//        accountCreationPage.firstCheckMark.click();
-//        accountCreationPage.secondCheckMark.click();
-//        for (WebElement checkbox : accountCreationPage.checkMarks){
-//            checkbox.click();
-//        }
         return this;
     }
 
     public void clickOnSubmitBtn(){
         js.executeScript("arguments[0].click();", accountCreationPage.registrationBtn);
-        //accountCreationPage.registrationBtn.click();
     }
 }

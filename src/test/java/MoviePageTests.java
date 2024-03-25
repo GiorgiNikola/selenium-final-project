@@ -1,16 +1,16 @@
 import POM.Data.Constants;
-import POM.Pages.MoviePage;
+import POM.Pages.AccountCreationPage;
 import POM.Steps.*;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.edge.EdgeDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
-
-import java.io.File;
 
 public class MoviePageTests {
     WebDriver driver;
@@ -19,40 +19,27 @@ public class MoviePageTests {
     PopupPageSteps popupPageSteps;
     AuthorisationPageSteps authorisationPageSteps;
     AccountCreationPageSteps accountCreationPageSteps;
-    MoviePage moviePage;
-    @BeforeClass
-    public void setup(){
-        WebDriverManager.chromedriver().setup();
-        ChromeOptions options = new ChromeOptions();
-        options.addExtensions(new File(Constants.extensionPath));
-        driver = new ChromeDriver(options);
+    AccountCreationPage accountCreationPage;
+    @BeforeTest
+    @Parameters("browser")
+    public void setup(String browser){
+        if (browser.equalsIgnoreCase(Constants.chromeName)){
+            WebDriverManager.chromedriver().setup();
+            driver = new ChromeDriver();
+        }else if (browser.equalsIgnoreCase(Constants.firefoxName)){
+            WebDriverManager.firefoxdriver().setup();
+            driver = new FirefoxDriver();
+        }else if (browser.equalsIgnoreCase(Constants.edgeName)){
+            WebDriverManager.edgedriver().setup();
+            driver = new EdgeDriver();
+        }
         driver.manage().window().maximize();
         moviePageSteps = new MoviePageSteps(driver);
         concreteMoviePageSteps = new ConcreteMoviePageSteps(driver);
         popupPageSteps = new PopupPageSteps(driver);
         authorisationPageSteps = new AuthorisationPageSteps(driver);
         accountCreationPageSteps = new AccountCreationPageSteps(driver);
-        moviePage = new MoviePage(driver);
-    }
-
-    @Test
-    public void movieTest(){
-        boolean checkCinemaTitles = moviePageSteps
-                                        .clickOnFirstMovie()
-                                        .chooseEastPoint()
-                                        .checkCinemaTitles();
-        Assert.assertTrue(checkCinemaTitles);
-        boolean validatePopup = moviePageSteps
-                                        .clickOnLastDate()
-                                        .clickOnLastOptions()
-                                        .checkMovieCinemaDate();
-        Assert.assertTrue(validatePopup);
-        moviePageSteps
-                .clickOnFreeSeat()
-                .clickCreateAccount()
-                .fillAllFields()
-                .clickOnSubmitBtn();
-        Assert.assertEquals(moviePage.errorMessage.getText(), Constants.errorMessage);
+        accountCreationPage = new AccountCreationPage(driver);
     }
 
     @Test
@@ -66,13 +53,23 @@ public class MoviePageTests {
         concreteMoviePageSteps
                 .clickOnLastDate()
                 .clickOnLastOptions();
-        boolean validatePopup = popupPageSteps.checkMovieCinemaDate();
-        Assert.assertTrue(validatePopup);
-        popupPageSteps.clickOnFreeSeat();
-        authorisationPageSteps.clickCreateAccount();
+
+        boolean checkMovie = popupPageSteps.checkMovie();
+        Assert.assertTrue(checkMovie);
+        boolean checkCinema = popupPageSteps.checkCinema();
+        Assert.assertTrue(checkCinema);
+        boolean checkDate = popupPageSteps.checkDate();
+        Assert.assertTrue(checkDate);
+        popupPageSteps
+                .clickOnFreeSeat();
+        authorisationPageSteps
+                .clickCreateAccount();
         accountCreationPageSteps
                 .fillAllFields()
+                .selectYear()
+                .acceptCheckMarks()
                 .clickOnSubmitBtn();
+        Assert.assertEquals(accountCreationPage.errorMessage.getText(), Constants.errorMessage);
     }
 
     @AfterClass

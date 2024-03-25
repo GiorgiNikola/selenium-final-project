@@ -25,8 +25,6 @@ public class AccountCreationPage extends BaseClass {
     public WebElement selectBirthYear;
     @FindBy(css = "input[name='phone']")
     public WebElement phoneNumber;
-    @FindBy(css = "span.checkmark")
-    public List<WebElement> checkMarks;
     @FindBy(css = "div.pb-10px input#test")
     public WebElement firstCheckMark;
     @FindBy(css = "div.pb-10px input#tbcAgreement")

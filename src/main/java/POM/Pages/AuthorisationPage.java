@@ -7,7 +7,7 @@ import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 
 public class AuthorisationPage extends BaseClass {
-    @FindBy(css = "a.black-hover")
+    @FindBy(css = "div.create.pl-2")
     public WebElement createAccount;
     public AuthorisationPage(WebDriver driver) {
         super(driver);

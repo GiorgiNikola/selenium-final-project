@@ -21,11 +21,8 @@ public class LandingPage extends BaseClass {
     public WebElement acceptCookie;
     @FindBy(css = "header div.Menus a[href*='events']")
     public WebElement movieBtn;
-    @FindBy(css = "span.main-category-span.open.searched-category")
-    public WebElement kartingElement;
     public LandingPage(WebDriver driver) {
         super(driver);
-        this.driver = driver;
         PageFactory.initElements(driver, this);
     }
 }

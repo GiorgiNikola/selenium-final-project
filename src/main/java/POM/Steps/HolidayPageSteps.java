@@ -1,11 +1,9 @@
 package POM.Steps;
 
-import POM.Data.Constants;
-import POM.Pages.LandingPage;
-import POM.Pages.HolidayPage;
 import POM.Common.BaseClass;
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
+import POM.Data.Constants;
+import POM.Pages.HolidayPage;
+import POM.Pages.LandingPage;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -14,21 +12,22 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class HolidayPageSteps extends BaseClass {
     WebDriverWait wait;
     HolidayPage holidayPage;
-    LandingPageSteps landingPageSteps;
     LandingPage landingPage;
+    LandingPageSteps landingPageSteps;
+
     public HolidayPageSteps(WebDriver driver) {
         super(driver);
-        this.driver = driver;
         landingPageSteps = new LandingPageSteps(driver);
         landingPageSteps.getToHolidaySection()
                         .acceptCookie();
         this.holidayPage = new HolidayPage(driver);
-        wait = new WebDriverWait(driver, 7);
         landingPage = new LandingPage(driver);
+        wait = new WebDriverWait(driver, 7);
     }
 
     public HolidayPageSteps sortOffers(String order){
@@ -45,20 +44,22 @@ public class HolidayPageSteps extends BaseClass {
 
 
     public double getFirstOfferPrice() {
-        return holidayPage.offers.get(0).findElements(holidayPage.byPrice).stream()
-                .filter(p -> !p.getText().isBlank()).map(p -> Double.parseDouble(p.getText().trim().replaceAll("[^\\d.]", "")))
-                .sorted().findFirst().get();
+        List<WebElement> firstOfferPrices = holidayPage.offers.get(0).findElements(holidayPage.byPrice);
+        return filterPrices(firstOfferPrices);
     }
 
 
     public double mostExpensiveOfferPriceOnCurrentPage(){
-        return holidayPage.offers.stream().map(o -> o.findElements(holidayPage.byPrice))
-                .map(this::filterPrices).max(Comparator.naturalOrder()).get();
+        return getPricesStream().max(Comparator.naturalOrder()).get();
     }
 
     public double leastExpensiveOfferPriceOnCurrentPage(){
+        return getPricesStream().min(Comparator.naturalOrder()).get();
+    }
+
+    public Stream<Double> getPricesStream(){
         return holidayPage.offers.stream().map(o -> o.findElements(holidayPage.byPrice))
-                .map(this::filterPrices).min(Comparator.naturalOrder()).get();
+                .map(this::filterPrices);
     }
 
     public double filterPrices(List<WebElement> prices){
@@ -91,7 +92,7 @@ public class HolidayPageSteps extends BaseClass {
         while (true){
             double currentMin = leastExpensiveOfferPriceOnCurrentPage();
             if (currentMin < min)min = currentMin;
-            if (hasNextPage()) holidayPage.nextPage.click();
+            if (hasNextPage()) clickOnNextPage();
             else break;
         }
         return min;
@@ -108,6 +109,8 @@ public class HolidayPageSteps extends BaseClass {
                 String offerTitle = holidayPage.offerTitles.get(i).getText();
                 String offerDescription = holidayPage.offerDescriptions.get(i).getText();
                 if (!(offerTitle.contains(Constants.cottageText) || offerDescription.contains(Constants.cottageText))) {
+                    System.out.println("Offer title: " + offerTitle);
+                    System.out.println("Offer Description: " + offerDescription);
                     System.out.println("Offer does not contain word 'კოტეჯი' not in title nor in description!");
                     return false;
                 }
@@ -129,14 +132,20 @@ public class HolidayPageSteps extends BaseClass {
         return this;
     }
 
-    public void goToFirstPage(){
-        holidayPage.firstPage.click();
+    public void goToHolidayWithUrl(){
+        driver.get(Constants.holidayURL);
     }
 
     public boolean priceRangeCheck(double min, double max){
-        double minimumPrice = leastExpensiveOfferAmongAllOffers();
-        goToFirstPage();
-        double maximumPrice = mostExpensiveOfferPriceOnCurrentPage();
-        return !(minimumPrice < min) && !(maximumPrice > max);
+        goToHolidayWithUrl();
+        List<Double> prices = getPricesStream().toList();
+        while (true) {
+            for (Double price : prices) {
+                if (price < min || price > max) return false;
+            }
+            if (hasNextPage()) clickOnNextPage();
+            else break;
+        }
+        return true;
     }
 }
